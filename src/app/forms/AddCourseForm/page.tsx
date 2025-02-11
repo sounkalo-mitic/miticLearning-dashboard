@@ -223,7 +223,7 @@ const AddCourseForm: React.FC = () => {
                 <h1 className="text-2xl font-bold mb-6">Ajouter un cours</h1>
                 {step === 1 && (
                     <div>
-                        <h2 className="text-lg font-bold mb-4">Étape 1: Informations sur le cours</h2>
+                        <h2 className="text-lg font-bold mb-4">Etape 1: Informations sur le cours</h2>
                         <div className="grid grid-cols-2 gap-4">
                             <input
                                 type="text"
@@ -275,7 +275,7 @@ const AddCourseForm: React.FC = () => {
                                 className="border p-2 rounded w-full"
                             >
                                 <option value="" disabled>
-                                    Sélectionnez une catégorie
+                                    Selectionnez une categorie
                                 </option>
                                 {categories.map((category) => (
                                     <option key={category._id} value={category._id}>
@@ -291,7 +291,7 @@ const AddCourseForm: React.FC = () => {
                                 className="border p-2 rounded w-full"
                             >
                                 <option value="" disabled>
-                                    Sélectionnez un niveau d'etude
+                                    Selectionnez un level
                                 </option>
                                 {studyLevels.map((level) => (
                                     <option key={level._id} value={level._id}>
@@ -308,7 +308,7 @@ const AddCourseForm: React.FC = () => {
                                 className="border p-2 rounded w-full"
                             >
                                 <option value="" disabled>
-                                    Sélectionnez le metier concerner
+                                    Selectionnez le metier concerner
                                 </option>
                                 {jobs.map((job) => (
                                     <option key={job._id} value={job._id}>
@@ -336,7 +336,7 @@ const AddCourseForm: React.FC = () => {
 
                 {step === 2 && (
                     <div>
-                        <h2 className="text-lg font-bold mb-4">Étape 2: Ajouter des leçons</h2>
+                        <h2 className="text-lg font-bold mb-4">Etape 2: Ajouter des lecons</h2>
                         {lessons.map((lesson, lessonIndex) => (
                             <div key={lessonIndex} className="mb-4 border-b pb-4">
                                 <input
@@ -390,7 +390,7 @@ const AddCourseForm: React.FC = () => {
                             onClick={handleAddLesson}
                             className="bg-green-500 text-white px-4 py-2 rounded mt-4"
                         >
-                            Ajouter une leçon <FontAwesomeIcon icon={faPlus} />
+                            Ajouter une lecon <FontAwesomeIcon icon={faPlus} />
                         </button>
                         <button onClick={() => setStep(1)} className="bg-red-500 text-white px-4 py-2 rounded mt-4 mr-2">
                             <FontAwesomeIcon icon={faArrowLeft} /> Retour
