@@ -7,10 +7,12 @@ import axios from "axios";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 
+// Chargement dynamique de ReactApexChart sans SSR (Server Side Rendering)
 const ReactApexChart = dynamic(() => import("react-apexcharts"), {
   ssr: false,
 });
 
+// Configuration des options du graphique (ApexCharts)
 const options: ApexOptions = {
   chart: {
     type: "line",
@@ -43,9 +45,9 @@ const options: ApexOptions = {
 };
 
 const ChartFive: React.FC = () => {
-  const [chartData, setChartData] = useState<any[]>([]);
-  const [filter, setFilter] = useState<string>("all");
-  const user = useSelector((state: RootState) => state.user);
+  const [chartData, setChartData] = useState<any[]>([]); // État pour les données du graphique
+  const [filter, setFilter] = useState<string>("all"); // Filtre sélectionné
+  const user = useSelector((state: RootState) => state.user); // Récupération de l'utilisateur depuis Redux
 
   // Fonction pour transformer la date d'inscription en format requis pour le graphique
   const prepareDataForChart = (enrolments: any[]) => {
@@ -61,45 +63,48 @@ const ChartFive: React.FC = () => {
         (group) => new Date(group.x).toDateString() === new Date(entry.x).toDateString()
       );
       if (existing) {
-        existing.y += 1;
+        existing.y += 1; // Si la date existe déjà, on incrémente la valeur
       } else {
-        groupedData.push(entry);
+        groupedData.push(entry); // Sinon, on ajoute une nouvelle entrée
       }
     });
 
-    // Mise à jour de l'état pour le graphique
+    // Mise à jour de l'état avec les données groupées pour le graphique
     setChartData(groupedData);
   };
 
-  // Fonction de filtrage des données en fonction de la sélection
+  // Fonction de filtrage des données en fonction du filtre sélectionné
   const filterData = (enrolments: any[]) => {
     const filteredData = enrolments.filter((enrolment) => {
       const enrolmentDate = new Date(enrolment.createdAt);
       const currentDate = new Date();
 
-      if (filter === "lastWeek") {
-        const lastWeek = new Date();
-        lastWeek.setDate(currentDate.getDate() - 7);
-        return enrolmentDate >= lastWeek;
-      } else if (filter === "lastMonth") {
-        const lastMonth = new Date();
-        lastMonth.setMonth(currentDate.getMonth() - 1);
-        return enrolmentDate >= lastMonth;
+      // Filtrage basé sur les dates
+      switch (filter) {
+        case "lastWeek":
+          const lastWeek = new Date();
+          lastWeek.setDate(currentDate.getDate() - 7);
+          return enrolmentDate >= lastWeek;
+        case "lastMonth":
+          const lastMonth = new Date();
+          lastMonth.setMonth(currentDate.getMonth() - 1);
+          return enrolmentDate >= lastMonth;
+        default:
+          return true; // Aucune condition, afficher toutes les données
       }
-      // Si aucun filtre n'est sélectionné, afficher toutes les données
-      return true;
     });
 
     return filteredData;
   };
 
+  // Utilisation de useEffect pour récupérer les données des inscriptions et mettre à jour le graphique
   useEffect(() => {
     const fetchEnrolments = async () => {
       try {
         const response = await axios.get(`http://localhost:4444/api/enrollement`);
         const enrolments = response.data;
 
-        // Appliquer le filtre
+        // Appliquer le filtre sur les données récupérées
         const filteredEnrolments = filterData(enrolments);
 
         // Préparer les données pour le graphique
@@ -109,8 +114,8 @@ const ChartFive: React.FC = () => {
       }
     };
 
-    fetchEnrolments();
-  }, [user.id, filter]); // Recharger les données à chaque changement de filtre
+    fetchEnrolments(); // Appel de la fonction pour récupérer les données à chaque changement de filtre ou d'utilisateur
+  }, [user.id, filter, filterData]); // Ajout de filterData comme dépendance pour éviter les erreurs de hooks
 
   return (
     <div className="col-span-12 rounded-sm border border-stroke bg-white px-5 pb-5 pt-7.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:col-span-8">

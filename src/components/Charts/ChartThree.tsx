@@ -122,7 +122,7 @@ const ChartThree = () => {
         >
           <option value="all">Tous</option>
           <option value="thisYear">Cette année</option>
-          <option value="lastYear">L'année dernière</option>
+          <option value="lastYear">année dernière</option>
         </select>
       </div>
 

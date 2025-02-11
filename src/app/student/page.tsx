@@ -65,9 +65,7 @@ const Students: React.FC = () => {
             name: 'Actions',
             cell: (row: Student) => (
                 <div className="flex items-center space-x-3.5">
-                    <button className="hover:text-primary" onClick={() => handleView(row)}>
-                        <FontAwesomeIcon icon={faEye} />
-                    </button>
+
                     <button className="hover:text-red" onClick={() => handleDelete(row)}>
                         <FontAwesomeIcon icon={faTrash} />
                     </button>
@@ -83,9 +81,7 @@ const Students: React.FC = () => {
     ];
 
     // Fonction de gestion des actions (Voir, Modifier, Supprimer)
-    const handleView = (student: Student) => {
-        alert(`Voir l'étudiant : ${student.student.firstname} ${student.student.lastname}`);
-    };
+
 
     const handleEdit = (student: Student) => {
         alert(`Modifier l'étudiant : ${student.student.firstname} ${student.student.lastname}`);
