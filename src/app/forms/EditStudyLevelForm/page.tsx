@@ -38,7 +38,7 @@ const EditStudyLevelForm: React.FC<EditStudyLevelFormProps> = ({ StudyLevelId, o
 
   return (
     <form onSubmit={handleSubmit} className="max-w-lg mx-auto bg-white p-6 rounded shadow-md space-y-4">
-      <h2 className="text-xl font-bold">Modifier le niveau d'etude</h2>
+      <h2 className="text-xl font-bold">Modifier le Level</h2>
       {error && <p className="text-red-500">{error}</p>}
       <div>
         <label className="block text-sm font-medium text-gray-700">Nom</label>

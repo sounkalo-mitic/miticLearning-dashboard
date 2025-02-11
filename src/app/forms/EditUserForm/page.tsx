@@ -100,7 +100,7 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ userId, onUpdateSuccess }) 
                 />
             </div>
             <div>
-                <label className="block text-gray-700">Nom d'utilisateur</label>
+                <label className="block text-gray-700">Nom utilisateur</label>
                 <input
                     type="text"
                     name="username"
@@ -158,7 +158,7 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ userId, onUpdateSuccess }) 
                 />
             </div>
             <div>
-                <label className="block text-gray-700">Niveau d'étude</label>
+                <label className="block text-gray-700">Level</label>
                 <select
                     name="studyLevel"
                     value={formData.studyLevel}

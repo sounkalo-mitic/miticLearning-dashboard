@@ -110,7 +110,7 @@ const Profile = () => {
             </div>
           </div>
           <div>
-            <label className="text-gray-600">Nom d'utilisateur</label>
+            <label className="text-gray-600">Nom utilisateur</label>
             <input
               type="text"
               name="username"

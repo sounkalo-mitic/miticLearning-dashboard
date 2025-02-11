@@ -24,12 +24,13 @@ interface Student {
 }
 
 const Students: React.FC = () => {
+    // États pour gérer les étudiants, les erreurs et le total
     const [students, setStudents] = useState<Student[]>([]);
     const [error, setError] = useState<string | null>(null);
     const [totalStudent, setTotalStudent] = useState<string>('');
     const user = useSelector((state: RootState) => state.user); // Accès à l'utilisateur depuis Redux
 
-    // Colonnes du tableau
+    // Colonnes du tableau des étudiants
     const columns = [
         {
             name: 'Nom Étudiant',
@@ -81,7 +82,7 @@ const Students: React.FC = () => {
         },
     ];
 
-    // Gestion des actions
+    // Fonction de gestion des actions (Voir, Modifier, Supprimer)
     const handleView = (student: Student) => {
         alert(`Voir l'étudiant : ${student.student.firstname} ${student.student.lastname}`);
     };
@@ -97,15 +98,16 @@ const Students: React.FC = () => {
         }
     };
 
+    // Fonction pour récupérer les étudiants
     const fetchStudents = async () => {
         try {
-            // Vérifiez si le rôle de l'utilisateur est "teacher"
-            const userId = user.role === "teacher" ? (user.id ? String(user.id) : undefined) : undefined;
-            
+            const userId = user.role === "teacher" ? String(user.id) : undefined;
             const data = await getStudentsByTeacher(userId);
+
+            // Vérification des données reçues
             if (data.students && Array.isArray(data.students)) {
                 setStudents(data.students);
-                setTotalStudent(data.students.length);
+                setTotalStudent(data.students.length.toString());
             } else {
                 throw new Error('Les données reçues ne sont pas valides.');
             }
@@ -114,10 +116,13 @@ const Students: React.FC = () => {
             console.error(err);
         }
     };
-    // Charger les étudiants
+
+    // useEffect pour charger les étudiants au premier rendu ou lors d'un changement de `user.id`
     useEffect(() => {
-        fetchStudents();
-    }, [user?.id]);
+        if (user?.id) {
+            fetchStudents();
+        }
+    }, [user?.id]); // Dépendance uniquement sur `user.id`, pas besoin de `fetchStudents`
 
     return (
         <DefaultLayout>

@@ -68,7 +68,7 @@ const LoginForm: React.FC = () => {
             
             <form onSubmit={handleSubmit}>
                 <div className="mb-4">
-                    <label className="block text-gray-700">Nom d'utilisateur</label>
+                    <label className="block text-gray-700">Nom utilisateur</label>
                     <input
                         type="text"
                         value={username}
