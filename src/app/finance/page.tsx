@@ -1,8 +1,8 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import CardDataStats from "@/components/CardDataStats";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faList, faMoneyBill, faTrash, faUsers } from "@fortawesome/free-solid-svg-icons";
+import { faList, faMoneyBill } from "@fortawesome/free-solid-svg-icons";
 import DataTableComponent from "@/components/Tables/DataTable";
 import DefaultLayout from "../../components/Layouts/DefaultLayout";
 import { getPaymentsByTeacher } from "@/services/paymentService";
@@ -10,17 +10,14 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { Payment } from "@/types/payment";
 
-
-
 // Définir un type explicite pour les colonnes si nécessaire
 const Finance: React.FC = () => {
     const [payments, setPayments] = useState<Payment[]>([]);
-    const [teacherId, setTeacherId] = useState<string>("67585d9d262ba108229acd99");
     const user = useSelector((state: RootState) => state.user); // Accès à l'utilisateur depuis Redux
 
-    const fetchPayments = async () => {
+    // Fonction de récupération des paiements
+    const fetchPayments = useCallback(async () => {
         try {
-            // Vérifiez si le rôle de l'utilisateur est "teacher"
             const userId = user.role === "teacher" ? (user.id ? String(user.id) : undefined) : undefined;
             const data = await getPaymentsByTeacher(userId);
             if (Array.isArray(data.payments)) {
@@ -29,14 +26,14 @@ const Finance: React.FC = () => {
                 console.error("Les données reçues ne sont pas valides :", data);
             }
         } catch (error) {
-            console.error("Erreur lors du chargement des cours :", error);
+            console.error("Erreur lors du chargement des paiements :", error);
         }
-    };
+    }, [user.role, user.id]); // useCallback pour éviter les recalculs inutiles
 
-    // Charger les cours depuis l'API
+    // Charger les paiements 
     useEffect(() => {
         fetchPayments();
-    }, [teacherId]);
+    }, [fetchPayments]); // Inclure fetchPayments dans les dépendances
 
     // Colonnes du tableau
     const columns = [
@@ -85,13 +82,13 @@ const Finance: React.FC = () => {
         }
     ];
 
-    //calculer le total des payments
-    function calculateTotalAmount(payments: any): number {
+    // Calculer le total des paiements
+    function calculateTotalAmount(payments: Payment[]): number {
         if (!payments || !Array.isArray(payments)) {
             throw new Error("Invalid payment data format");
         }
 
-        return payments.reduce((total: number, payment: any) => {
+        return payments.reduce((total: number, payment: Payment) => {
             return total + (payment.totaAmount || 0);
         }, 0);
     }
@@ -109,7 +106,7 @@ const Finance: React.FC = () => {
 
             <div className="pt-5">
                 <DataTableComponent
-                    title="Listes des payements"
+                    title="Listes des paiements"
                     columns={columns}
                     data={payments}
                     pagination

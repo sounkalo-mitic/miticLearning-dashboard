@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
     faCheck,
@@ -8,7 +8,6 @@ import {
     faList,
     faMoneyBill,
     faTrash,
-    faUsers,
     faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import DataTableComponent from "@/components/Tables/DataTable";
@@ -16,57 +15,70 @@ import DefaultLayout from "@/components/Layouts/DefaultLayout";
 import { deleteCourse, getCourses } from "@/services/courseService";
 import CardDataStats from "@/components/CardDataStats";
 import { Course } from "@/types/course";
-import PreviewCourse from "../ajout_cours/cours_validation/page";
+import PreviewCourse from "../cours_validation/page";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
-
+import { TableColumn } from "react-data-table-component";
 
 const Courses: React.FC = () => {
     const [courses, setCourses] = useState<Course[]>([]);
     const [totalCourse, setTotalCourse] = useState<string>('');
     const [selectedCourse, setSelectedCourse] = useState<string | null>(null);
-    const user = useSelector((state: RootState) => state.user); // Accès à l'utilisateur depuis Redux
+    const user = useSelector((state: RootState) => state.user);
 
-
-    const fetchCourses = async () => {
+    /**
+     * Récupère la liste des cours depuis l'API en fonction du rôle de l'utilisateur.
+     */
+    const fetchCourses = useCallback(async () => {
         try {
-            // Vérifiez si le rôle de l'utilisateur est "teacher"
-            const userId = user.role === "teacher" ? (user.id ? String(user.id) : undefined) : undefined;
+            // Déterminer si l'utilisateur est un enseignant et récupérer son ID
+            const userId = user.role === "teacher" ? String(user.id || "") : undefined;
 
-            // Appelez getCourses avec ou sans userId selon le rôle
+            // Récupérer les cours via l'API
             const data = await getCourses(userId);
 
-            // Vérifiez si les données reçues sont valides
             if (Array.isArray(data.data)) {
                 setCourses(data.data);
-                setTotalCourse(data.data.length);
+                setTotalCourse(String(data.data.length));
             } else {
-                console.error("Les données reçues ne sont pas valides :", data);
+                console.error("Réponse API inattendue :", data);
             }
         } catch (error) {
             console.error("Erreur lors du chargement des cours :", error);
         }
-    };
+    }, [user.id, user.role]);
 
-    //calculer le total des montant des cours
-    const calculateTotalPrice = (courses: any[]): number => {
+    /**
+     * Calcule le montant total des cours.
+     */
+    const calculateTotalPrice = (courses: Course[]): number => {
         return courses.reduce((total, course) => total + (course.price || 0), 0);
     };
 
-    // Charger les cours depuis l'API
+    /**
+     * Charge les cours au montage du composant et lors du changement de l'utilisateur.
+     */
     useEffect(() => {
         fetchCourses();
-    }, []);
+    }, [fetchCourses]);
 
-    // Actions
+    /**
+     * Gère l'affichage du détail d'un cours.
+     */
     const handleView = (id: string) => {
-        setSelectedCourse(id)
+        setSelectedCourse(id);
     };
 
+    /**
+     * Gère la modification d'un cours.
+     */
     const handleEdit = (id: string) => {
         alert(`Modifier le cours avec l'ID : ${id}`);
     };
 
+    /**
+     * Gère la suppression d'un cours avec confirmation.
+     */
     const handleDelete = async (id: string) => {
         if (confirm("Êtes-vous sûr de vouloir supprimer ce cours ?")) {
             try {
@@ -75,13 +87,13 @@ const Courses: React.FC = () => {
                 alert("Cours supprimé avec succès.");
             } catch (error) {
                 console.error("Erreur lors de la suppression :", error);
-                alert("Erreur lors de la suppression du cours.");
+                alert("Une erreur s'est produite. Veuillez réessayer.");
             }
         }
     };
 
-    // Colonnes pour DataTable
-    const columns = [
+    // Définition des colonnes du tableau
+    const columns: TableColumn<Course>[] = [
         {
             name: "Titre",
             selector: (row: Course) => row.title,
@@ -101,22 +113,19 @@ const Courses: React.FC = () => {
         },
         {
             name: "Catégorie",
-            selector: (row: Course) => `${row.category_id ? row.category_id.name : "non definie"}`,
+            selector: (row: Course) => row.category_id ? row.category_id.name : "Non définie",
             sortable: true,
             center: true,
         },
         {
             name: "Certification",
-            selector: (row: Course) => (
+            cell: (row: Course) => (
                 <span
-                    className={`inline-flex rounded-full py-1 px-3 text-sm font-medium ${row.isCertified ? "bg-success text-white" : "bg-danger text-white"
-                        }`}
+                    className={`inline-flex rounded-full py-1 px-3 text-sm font-medium ${
+                        row.isCertified ? "bg-success text-white" : "bg-danger text-white"
+                    }`}
                 >
-                    {row.isCertified ? (
-                        <FontAwesomeIcon icon={faCheck} />
-                    ) : (
-                        <FontAwesomeIcon icon={faXmark} />
-                    )}
+                    <FontAwesomeIcon icon={row.isCertified ? faCheck : faXmark} />
                 </span>
             ),
             sortable: true,
@@ -130,10 +139,11 @@ const Courses: React.FC = () => {
         },
         {
             name: "Statut",
-            selector: (row: Course) => (
+            cell: (row: Course) => (
                 <span
-                    className={`inline-flex rounded-full py-1 px-3 text-sm font-medium ${row.status ? "bg-success text-white" : "bg-danger text-white"
-                        }`}
+                    className={`inline-flex rounded-full py-1 px-3 text-sm font-medium ${
+                        row.status ? "bg-success text-white" : "bg-danger text-white"
+                    }`}
                 >
                     {row.status ? "Actif" : "Inactif"}
                 </span>
@@ -167,34 +177,35 @@ const Courses: React.FC = () => {
             center: true,
         },
     ];
+    
 
     return (
         <DefaultLayout>
-            {
-                !selectedCourse ? (
-                    <>
-                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7.5">
-                            <CardDataStats title="Total de cours" total={totalCourse}>
-                                <FontAwesomeIcon icon={faList} color="#29015D" />
-                            </CardDataStats>
-                            <CardDataStats title="Montant Total" total={String(calculateTotalPrice(courses))}>
-                                <FontAwesomeIcon icon={faMoneyBill} color="#29015D" />
-                            </CardDataStats>
-                        </div>
-                        <div className="pt-5">
-                            <DataTableComponent
-                                title="Liste des Cours"
-                                columns={columns}
-                                data={courses}
-                                pagination
-                                highlightOnHover
-                                addButtonText="Ajouter un cours"
-                                onAddButtonLink="/forms/AddCourseForm"
-                            />
-                        </div>
-                    </>
-                ) : (<PreviewCourse courseId={selectedCourse} />)
-            }
+            {!selectedCourse ? (
+                <>
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7.5">
+                        <CardDataStats title="Total de cours" total={totalCourse}>
+                            <FontAwesomeIcon icon={faList} color="#29015D" />
+                        </CardDataStats>
+                        <CardDataStats title="Montant Total" total={String(calculateTotalPrice(courses))}>
+                            <FontAwesomeIcon icon={faMoneyBill} color="#29015D" />
+                        </CardDataStats>
+                    </div>
+                    <div className="pt-5">
+                        <DataTableComponent
+                            title="Liste des Cours"
+                            columns={columns}
+                            data={courses}
+                            pagination
+                            highlightOnHover
+                            addButtonText="Ajouter un cours"
+                            onAddButtonLink="/forms/AddCourseForm"
+                        />
+                    </div>
+                </>
+            ) : (
+                <PreviewCourse courseId={selectedCourse} />
+            )}
         </DefaultLayout>
     );
 };
