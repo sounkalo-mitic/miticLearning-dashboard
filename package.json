@@ -23,7 +23,8 @@
     "react-apexcharts": "^1.4.1",
     "react-data-table-component": "^7.6.2",
     "react-dom": "^18",
-    "react-redux": "^9.2.0"
+    "react-redux": "^9.2.0",
+    "react-toastify": "^11.0.3"
   },
   "devDependencies": {
     "@types/node": "^20",

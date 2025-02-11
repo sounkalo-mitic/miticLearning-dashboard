@@ -1,10 +1,10 @@
 'use client';
 import React, { useState, useEffect } from "react";
-import { useSelector } from 'react-redux'; // Pas besoin de Provider ici
+import { useSelector } from 'react-redux';
 import { useRouter } from 'next/navigation';
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
-import { RootState } from '@/redux/store'; // Utilisation d'un type pour le state global
+import { RootState } from '@/redux/store';
 
 export default function DefaultLayout({
   children,
@@ -12,19 +12,20 @@ export default function DefaultLayout({
   children: React.ReactNode;
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const user = useSelector((state: RootState) => state.user); // Accès à l'utilisateur depuis Redux
+  const [isChecking, setIsChecking] = useState(true); // État pour éviter le rendu avant la vérification
+  const user = useSelector((state: RootState) => state.user);
   const router = useRouter();
 
   useEffect(() => {
-    if (!user) { // Si l'utilisateur n'est pas authentifié
-      router.push('/forms/LoginForm'); // Redirige vers la page de connexion
+    if (!user || (user.role !== "teacher" && user.role !== "admin")) {
+      router.push('/forms/LoginForm');
+    } else {
+      setIsChecking(false); // Laisse afficher la page si l'utilisateur est valide
     }
-    console.log(user);
-    
-  }, [user, router]); // La redirection dépend de `user`
+  }, [user, router]);
 
-  // Si l'utilisateur n'est pas encore chargé, vous pouvez afficher un écran de chargement ou rien
-  // if (!user) return <div>Loading...</div>;
+  // Tant que la vérification n'est pas terminée, afficher un écran blanc (ou un loader)
+  if (isChecking) return  <div className="flex justify-center items-center h-screen">Chargement...</div>;
 
   return (
     <div className="flex">
