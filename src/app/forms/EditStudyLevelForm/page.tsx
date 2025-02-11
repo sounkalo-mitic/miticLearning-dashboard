@@ -1,3 +1,4 @@
+"use client"
 import { getStudylevelById, updateStudyLevel } from "@/services/studyLevelService";
 import React, { useEffect, useState } from "react";
 

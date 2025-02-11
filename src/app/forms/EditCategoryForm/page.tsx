@@ -1,3 +1,4 @@
+"use client"
 import { getCategoryById, updateCategory } from "@/services/categoryService";
 import React, { useEffect, useState } from "react";
 

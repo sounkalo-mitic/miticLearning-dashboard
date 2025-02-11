@@ -1,3 +1,4 @@
+"use client"
 import { getJobById, updateJob } from "@/services/jobService";
 import React, { useEffect, useState } from "react";
 
