@@ -1,14 +1,14 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
-import CardDataStats from '@/components/CardDataStats';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faEye, faList, faTrash } from '@fortawesome/free-solid-svg-icons';
-import DataTableComponent from '@/components/Tables/DataTable';
-import DefaultLayout from '../../components/Layouts/DefaultLayout';
-import { getStudentsByTeacher } from '@/services/studentService';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/redux/store';
+import React, { useEffect, useState, useCallback } from "react";
+import CardDataStats from "@/components/CardDataStats";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEdit, faTrash, faList } from "@fortawesome/free-solid-svg-icons";
+import DataTableComponent from "@/components/Tables/DataTable";
+import DefaultLayout from "../../components/Layouts/DefaultLayout";
+import { getStudentsByTeacher } from "@/services/studentService";
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
 
 interface Student {
     student: {
@@ -24,48 +24,82 @@ interface Student {
 }
 
 const Students: React.FC = () => {
-    // États pour gérer les étudiants, les erreurs et le total
     const [students, setStudents] = useState<Student[]>([]);
     const [error, setError] = useState<string | null>(null);
-    const [totalStudent, setTotalStudent] = useState<string>('');
-    const user = useSelector((state: RootState) => state.user); // Accès à l'utilisateur depuis Redux
+    const [totalStudent, setTotalStudent] = useState<string>("");
 
-    // Colonnes du tableau des étudiants
+    const user = useSelector((state: RootState) => state.user);
+
+    const fetchStudents = useCallback(async () => {
+        try {
+            const userId = user.role === "teacher" ? String(user.id) : undefined;
+            const data = await getStudentsByTeacher(userId);
+
+            if (Array.isArray(data.students)) {
+                setStudents(data.students);
+                setTotalStudent(data.students.length.toString());
+            } else {
+                throw new Error("Les données reçues ne sont pas valides.");
+            }
+        } catch (err) {
+            setError("Erreur lors du chargement des étudiants.");
+            console.error("Erreur lors du chargement des étudiants :", err);
+        }
+    }, [user.id, user.role]);
+
+    useEffect(() => {
+        if (user?.id) {
+            fetchStudents();
+        }
+    }, [fetchStudents, user?.id]);
+
+    const handleEdit = (student: Student) => {
+        alert(`Modifier l'étudiant : ${student.student.firstname} ${student.student.lastname}`);
+    };
+
+    const handleDelete = (student: Student) => {
+        if (
+            confirm(`Êtes-vous sûr de vouloir supprimer l'étudiant ${student.student.firstname} ${student.student.lastname} ?`)
+        ) {
+            setStudents((prev) => prev.filter((s) => s.student.email !== student.student.email));
+            alert("Étudiant supprimé avec succès.");
+        }
+    };
+
     const columns = [
         {
-            name: 'Nom Étudiant',
+            name: "Nom Étudiant",
             selector: (row: Student) => `${row.student.firstname} ${row.student.lastname}`,
             sortable: true,
-            minWidth: '200px',
+            minWidth: "200px",
         },
         {
-            name: 'Email',
+            name: "Email",
             selector: (row: Student) => row.student.email,
             sortable: true,
         },
         {
-            name: 'Numéro',
+            name: "Numéro",
             selector: (row: Student) => row.student.phone,
             sortable: true,
             center: true,
         },
         {
-            name: 'Cours',
+            name: "Cours",
             selector: (row: Student) => row.course.title,
             sortable: true,
             center: true,
         },
         {
-            name: 'Durée',
+            name: "Durée",
             selector: (row: Student) => row.course.duration,
             sortable: true,
             center: true,
         },
         {
-            name: 'Actions',
+            name: "Actions",
             cell: (row: Student) => (
                 <div className="flex items-center space-x-3.5">
-
                     <button className="hover:text-red" onClick={() => handleDelete(row)}>
                         <FontAwesomeIcon icon={faTrash} />
                     </button>
@@ -80,46 +114,6 @@ const Students: React.FC = () => {
         },
     ];
 
-    // Fonction de gestion des actions (Voir, Modifier, Supprimer)
-
-
-    const handleEdit = (student: Student) => {
-        alert(`Modifier l'étudiant : ${student.student.firstname} ${student.student.lastname}`);
-    };
-
-    const handleDelete = (student: Student) => {
-        if (confirm(`Êtes-vous sûr de vouloir supprimer l'étudiant ${student.student.firstname} ${student.student.lastname} ?`)) {
-            setStudents((prev) => prev.filter((s) => s !== student));
-            alert('Étudiant supprimé avec succès.');
-        }
-    };
-
-    // Fonction pour récupérer les étudiants
-    const fetchStudents = async () => {
-        try {
-            const userId = user.role === "teacher" ? String(user.id) : undefined;
-            const data = await getStudentsByTeacher(userId);
-
-            // Vérification des données reçues
-            if (data.students && Array.isArray(data.students)) {
-                setStudents(data.students);
-                setTotalStudent(data.students.length.toString());
-            } else {
-                throw new Error('Les données reçues ne sont pas valides.');
-            }
-        } catch (err) {
-            setError('Erreur lors du chargement des étudiants.');
-            console.error(err);
-        }
-    };
-
-    // useEffect pour charger les étudiants au premier rendu ou lors d'un changement de `user.id`
-    useEffect(() => {
-        if (user?.id) {
-            fetchStudents();
-        }
-    }, [user?.id]); // Dépendance uniquement sur `user.id`, pas besoin de `fetchStudents`
-
     return (
         <DefaultLayout>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7.5">
@@ -132,13 +126,7 @@ const Students: React.FC = () => {
                 {error ? (
                     <div className="text-red-500">Erreur : {error}</div>
                 ) : (
-                    <DataTableComponent
-                        title="Liste des étudiants"
-                        columns={columns}
-                        data={students}
-                        pagination
-                        highlightOnHover
-                    />
+                    <DataTableComponent title="Liste des étudiants" columns={columns} data={students} pagination highlightOnHover />
                 )}
             </div>
         </DefaultLayout>

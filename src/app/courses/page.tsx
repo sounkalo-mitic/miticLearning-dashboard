@@ -23,7 +23,7 @@ import { TableColumn } from "react-data-table-component";
 const Courses: React.FC = () => {
     const [courses, setCourses] = useState<Course[]>([]);
     const [totalCourse, setTotalCourse] = useState<string>('');
-    const [selectedCourse, setSelectedCourse] = useState<string | null>(null);
+    const [selectedCourse, setSelectedCourse] = useState<string>('');
     const user = useSelector((state: RootState) => state.user);
 
     /**
@@ -121,9 +121,8 @@ const Courses: React.FC = () => {
             name: "Certification",
             cell: (row: Course) => (
                 <span
-                    className={`inline-flex rounded-full py-1 px-3 text-sm font-medium ${
-                        row.isCertified ? "bg-success text-white" : "bg-danger text-white"
-                    }`}
+                    className={`inline-flex rounded-full py-1 px-3 text-sm font-medium ${row.isCertified ? "bg-success text-white" : "bg-danger text-white"
+                        }`}
                 >
                     <FontAwesomeIcon icon={row.isCertified ? faCheck : faXmark} />
                 </span>
@@ -141,9 +140,8 @@ const Courses: React.FC = () => {
             name: "Statut",
             cell: (row: Course) => (
                 <span
-                    className={`inline-flex rounded-full py-1 px-3 text-sm font-medium ${
-                        row.status ? "bg-success text-white" : "bg-danger text-white"
-                    }`}
+                    className={`inline-flex rounded-full py-1 px-3 text-sm font-medium ${row.status ? "bg-success text-white" : "bg-danger text-white"
+                        }`}
                 >
                     {row.status ? "Actif" : "Inactif"}
                 </span>
@@ -177,11 +175,11 @@ const Courses: React.FC = () => {
             center: true,
         },
     ];
-    
+
 
     return (
         <DefaultLayout>
-            {!selectedCourse ? (
+            {selectedCourse !== null ? (
                 <>
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7.5">
                         <CardDataStats title="Total de cours" total={totalCourse}>
@@ -204,8 +202,9 @@ const Courses: React.FC = () => {
                     </div>
                 </>
             ) : (
-                <PreviewCourse courseId={selectedCourse} />
+                <PreviewCourse courseId={String(selectedCourse)} />
             )}
+
         </DefaultLayout>
     );
 };
