@@ -1,16 +1,17 @@
 "use client"
 import { getStudylevelById, updateStudyLevel } from "@/services/studyLevelService";
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 
-interface EditStudyLevelFormProps {
-  StudyLevelId: string;
-  onSuccess: () => void; // Callback pour rafraîchir la liste des catégories après mise à jour
-}
 
-const EditStudyLevelForm: React.FC<EditStudyLevelFormProps> = ({ StudyLevelId, onSuccess }) => {
+const EditStudyLevelForm: React.FC= () => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [error, setError] = useState("");
+  const searchParams = useSearchParams();
+  const StudyLevelId = String(searchParams.get("page")); // Récupération du paramètre "page" de l'URL
+  const router = useRouter();
 
   useEffect(() => {
     const fetchStudyLevel = async () => {
@@ -30,7 +31,7 @@ const EditStudyLevelForm: React.FC<EditStudyLevelFormProps> = ({ StudyLevelId, o
     try {
       await updateStudyLevel(StudyLevelId, { name, description });
       alert("level mise à jour avec succès !");
-      onSuccess();
+      router.push('/level')
     } catch (err: any) {
       setError(err.response?.data?.message || "Une erreur s'est produite");
     }

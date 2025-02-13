@@ -1,6 +1,8 @@
 "use client"
 import { getAllStudyLevels } from "@/services/studyLevelService";
 import { getUser, updateUser, User } from "@/services/userService";
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
 interface StudyLevel {
@@ -13,7 +15,7 @@ interface EditUserFormProps {
     onUpdateSuccess: () => void;
 }
 
-const EditUserForm: React.FC<EditUserFormProps> = ({ userId, onUpdateSuccess }) => {
+const EditUserForm: React.FC = () => {
     const [studyLevels, setStudyLevels] = useState<StudyLevel[]>([]);
     const [formData, setFormData] = useState({
         firstname: "",
@@ -28,6 +30,9 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ userId, onUpdateSuccess }) 
         status: true,
     });
     const [loading, setLoading] = useState(false);
+    const searchParams = useSearchParams();
+    const userId = String(searchParams.get("page")); // Récupération du paramètre "page" de l'URL
+    const router = useRouter();
 
     useEffect(() => {
         const fetchData = async () => {
@@ -66,7 +71,7 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ userId, onUpdateSuccess }) 
         try {
             await updateUser(userId, formData as User);
             alert("Utilisateur mis à jour avec succès !");
-            onUpdateSuccess();
+            router.push("/users");
         } catch (error) {
             console.error("Erreur lors de la mise à jour de l'utilisateur :", error);
             alert("Une erreur s'est produite.");

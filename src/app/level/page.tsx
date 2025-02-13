@@ -8,12 +8,14 @@ import DefaultLayout from "@/components/Layouts/DefaultLayout";
 import { deleteStudylevel, getAllStudyLevels } from "@/services/studyLevelService";
 import { StudyLevel } from "@/types/studyLevel";
 import EditStudyLevelForm from "../forms/EditStudyLevelForm/page";
+import { useRouter } from "next/router";
 
 const StudyLevels: React.FC = () => {
   const [studyLevels, setStudyLevels] = useState<StudyLevel[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [totalStudyLevels, setTotalStudyLevels] = useState<string>('');
-  const [editStudyLevelId, setEditStudyLevelId] = useState<string | null>(null);
+  const router = useRouter();
+
 
   const fetchStudyLevels = async () => {
     try {
@@ -31,13 +33,9 @@ const StudyLevels: React.FC = () => {
   }, []);
 
   const handleEditClick = (id: string) => {
-    setEditStudyLevelId(id);
+    router.push(`/forms/EditStudyLevelForm?page=${id}`);
   };
 
-  const handleEditSuccess = () => {
-    setEditStudyLevelId(null);
-    fetchStudyLevels()
-  };
 
   const handleDelete = async (id: string) => {
     if (confirm("Êtes-vous sûr de vouloir supprimer ce level ?")) {
@@ -91,32 +89,30 @@ const StudyLevels: React.FC = () => {
 
   return (
     <DefaultLayout>
-      {
-        !editStudyLevelId ? (<>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7.5">
-            <CardDataStats title="Total des Niveaux d'Étude" total={totalStudyLevels}>
-              <FontAwesomeIcon icon={faList} color="#29015D" />
-            </CardDataStats>
-          </div>
+      <>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7.5">
+          <CardDataStats title="Total des Niveaux d'Étude" total={totalStudyLevels}>
+            <FontAwesomeIcon icon={faList} color="#29015D" />
+          </CardDataStats>
+        </div>
 
-          <div className="pt-5">
-            {error && (
-              <div className="mb-4 text-center text-red-500 bg-red-100 p-3 rounded-md">
-                {error}
-              </div>
-            )}
-            <DataTableComponent
-              title="Liste des Niveaux d'Étude"
-              columns={columns}
-              data={studyLevels || []}
-              pagination
-              highlightOnHover
-              addButtonText="Ajouter un Niveau d'Étude"
-              onAddButtonLink="/forms/AddStudyLevelForm"
-            />
-          </div>
-        </>) : (<EditStudyLevelForm StudyLevelId={editStudyLevelId} onSuccess={handleEditSuccess} />)
-      }
+        <div className="pt-5">
+          {error && (
+            <div className="mb-4 text-center text-red-500 bg-red-100 p-3 rounded-md">
+              {error}
+            </div>
+          )}
+          <DataTableComponent
+            title="Liste des Niveaux d'Étude"
+            columns={columns}
+            data={studyLevels || []}
+            pagination
+            highlightOnHover
+            addButtonText="Ajouter un Niveau d'Étude"
+            onAddButtonLink="/forms/AddStudyLevelForm"
+          />
+        </div>
+      </>
     </DefaultLayout>
   );
 };

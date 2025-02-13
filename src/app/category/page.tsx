@@ -13,7 +13,6 @@ const Categories: React.FC = () => {
     const [categories, setCategories] = useState<Category[]>([]);
     const [error, setError] = useState<string | null>(null);
     const [totalCategories, setTotalCategories] = useState<string>('');
-    const [editCategoryId, setEditCategoryId] = useState<string | null>(null);
     const router = useRouter();
 
     const fetchCategories = async () => {
@@ -32,7 +31,7 @@ const Categories: React.FC = () => {
     }, []);
 
     const handleEditClick = (id: string) => {
-        router.push(`/forms/EditCategoryForm?page=${id}`);
+        router.push(`/forms/EditCategoryForm?page=${id}`)
     };
 
    
