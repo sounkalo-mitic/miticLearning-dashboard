@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import ReactApexChart from "react-apexcharts";
 import { getStudentsByTeacher } from "@/services/studentService";
+import { ApexOptions } from "apexcharts";
 
 const ChartThree = () => {
   const [chartData, setChartData] = useState<{
@@ -65,7 +66,7 @@ const ChartThree = () => {
     fetchEnrollments();
   }, [filter]); // Recharger les données quand le filtre change
 
-  const options = {
+  const options : ApexOptions = {
     chart: {
       id: "popular-courses",
       type: "bar",
@@ -122,7 +123,7 @@ const ChartThree = () => {
         >
           <option value="all">Tous</option>
           <option value="thisYear">Cette année</option>
-          <option value="lastYear">L'année dernière</option>
+          <option value="lastYear">année dernière</option>
         </select>
       </div>
 

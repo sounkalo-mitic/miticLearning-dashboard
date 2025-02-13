@@ -100,7 +100,7 @@ const AddUserForm: React.FC = () => {
                     />
                 </div>
                 <div>
-                    <label className="block text-gray-700">Nom d'utilisateur</label>
+                    <label className="block text-gray-700">Nom Utilisateur</label>
                     <input
                         type="text"
                         name="username"
@@ -166,7 +166,7 @@ const AddUserForm: React.FC = () => {
                     />
                 </div>
                 <div>
-                    <label className="block text-gray-700">Niveau d'étude</label>
+                    <label className="block text-gray-700">Niveau Etude</label>
                     <select
                         name="studyLevel"
                         value={formData.studyLevel}

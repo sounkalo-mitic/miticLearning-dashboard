@@ -1,15 +1,17 @@
+"use client"
 import { getStudylevelById, updateStudyLevel } from "@/services/studyLevelService";
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 
-interface EditStudyLevelFormProps {
-  StudyLevelId: string;
-  onSuccess: () => void; // Callback pour rafraîchir la liste des catégories après mise à jour
-}
 
-const EditStudyLevelForm: React.FC<EditStudyLevelFormProps> = ({ StudyLevelId, onSuccess }) => {
+const EditStudyLevelForm: React.FC= () => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [error, setError] = useState("");
+  const searchParams = useSearchParams();
+  const StudyLevelId = String(searchParams.get("page")); // Récupération du paramètre "page" de l'URL
+  const router = useRouter();
 
   useEffect(() => {
     const fetchStudyLevel = async () => {
@@ -29,7 +31,7 @@ const EditStudyLevelForm: React.FC<EditStudyLevelFormProps> = ({ StudyLevelId, o
     try {
       await updateStudyLevel(StudyLevelId, { name, description });
       alert("level mise à jour avec succès !");
-      onSuccess();
+      router.push('/level')
     } catch (err: any) {
       setError(err.response?.data?.message || "Une erreur s'est produite");
     }
@@ -37,7 +39,7 @@ const EditStudyLevelForm: React.FC<EditStudyLevelFormProps> = ({ StudyLevelId, o
 
   return (
     <form onSubmit={handleSubmit} className="max-w-lg mx-auto bg-white p-6 rounded shadow-md space-y-4">
-      <h2 className="text-xl font-bold">Modifier le niveau d'etude</h2>
+      <h2 className="text-xl font-bold">Modifier le Level</h2>
       {error && <p className="text-red-500">{error}</p>}
       <div>
         <label className="block text-sm font-medium text-gray-700">Nom</label>

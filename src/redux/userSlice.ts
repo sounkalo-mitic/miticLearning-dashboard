@@ -18,7 +18,10 @@ const initialState: UserState = {
 
 // Fonction pour récupérer l'utilisateur depuis localStorage
 const getUserFromLocalStorage = (): UserState => {
-    const user = localStorage.getItem('user');
+    if (typeof window === "undefined") {
+        return initialState; // Retourne un état vide si on est sur le serveur
+    }
+    const user = localStorage.getItem("user");
     return user ? JSON.parse(user) : initialState;
 };
 

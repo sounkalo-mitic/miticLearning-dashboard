@@ -7,13 +7,13 @@ import DataTableComponent from "@/components/Tables/DataTable";
 import DefaultLayout from "@/components/Layouts/DefaultLayout";
 import { getAllCategories } from "@/services/categoryService";
 import { Category } from "@/types/category";
-import EditCategoryForm from "../forms/EditCategoryForm/page";
+import { useRouter } from "next/router";
 
 const Categories: React.FC = () => {
     const [categories, setCategories] = useState<Category[]>([]);
     const [error, setError] = useState<string | null>(null);
     const [totalCategories, setTotalCategories] = useState<string>('');
-    const [editCategoryId, setEditCategoryId] = useState<string | null>(null);
+    const router = useRouter();
 
     const fetchCategories = async () => {
         try {
@@ -31,13 +31,10 @@ const Categories: React.FC = () => {
     }, []);
 
     const handleEditClick = (id: string) => {
-        setEditCategoryId(id);
+        router.push(`/forms/EditCategoryForm?page=${id}`)
     };
 
-    const handleEditSuccess = () => {
-        setEditCategoryId(null);
-        fetchCategories()
-    };
+   
 
     // Colonnes du tableau
     const columns = [
@@ -65,7 +62,7 @@ const Categories: React.FC = () => {
                     <button className="hover:text-red" aria-label="Supprimer">
                         <FontAwesomeIcon icon={faTrash} />
                     </button>
-                    <button className="hover:text-primary" aria-label="Modifier" onClick={() => {handleEditClick(row._id)}}>
+                    <button className="hover:text-primary" aria-label="Modifier" onClick={() => { handleEditClick(row._id) }}>
                         <FontAwesomeIcon icon={faEdit} />
                     </button>
                 </div>
@@ -78,8 +75,7 @@ const Categories: React.FC = () => {
 
     return (
         <DefaultLayout>
-            {
-                !editCategoryId ? (<>
+            <>
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7.5">
                         <CardDataStats title="Total des Catégories" total={totalCategories}>
                             <FontAwesomeIcon icon={faList} color="#29015D" />
@@ -102,8 +98,7 @@ const Categories: React.FC = () => {
                             onAddButtonLink="/forms/AddCategoryForm"
                         />
                     </div>
-                </>) : (<EditCategoryForm categoryId={editCategoryId} onSuccess={handleEditSuccess} />)
-            }
+                </>
         </DefaultLayout>
     );
 };

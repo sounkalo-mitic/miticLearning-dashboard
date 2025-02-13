@@ -7,13 +7,14 @@ import DataTableComponent from '@/components/Tables/DataTable';
 import DefaultLayout from '../../components/Layouts/DefaultLayout';
 import { deleteUser, getAllUsers } from '@/services/userService';
 import { User } from '@/types/user';
-import EditUserForm from '../forms/EditUserForm/page';
+import { useRouter } from 'next/router';
 
 const Users: React.FC = () => {
     const [users, setUsers] = useState<User[]>([]);
     const [error, setError] = useState<string | null>(null);
     const [totalUser, setTotalUser] = useState<string>('');
-    const [editUserId, setEditUserId] = useState<string | null>(null);
+    const router = useRouter();
+
 
     // Colonnes du tableau
     const columns = [
@@ -104,52 +105,51 @@ const Users: React.FC = () => {
     }, []);
 
     const handleEditClick = (id: string) => {
-        setEditUserId(id);
+        router.push(`/forms/EditUserForm?page=${id}`)
     };
 
-    const handleEditSuccess = () => {
-        setEditUserId(null);
-        fetchUsers()
-    };
 
     const handleDelete = async (id: string) => {
         if (confirm("Êtes-vous sûr de vouloir supprimer ce utilisateur ?")) {
-          try {
-            await deleteUser(id);
-            // setUsers((users) => users.filter((user) => user._id !== id));
-            fetchUsers();
-            alert("utilisateur supprimé avec succès.");
-          } catch (error) {
-            console.log("Erreur lors de la suppression :", error);
-            alert("Erreur lors de la suppression du utilisateur.");
-          }
+            try {
+                await deleteUser(id);
+                // setUsers((users) => users.filter((user) => user._id !== id));
+                fetchUsers();
+                alert("utilisateur supprimé avec succès.");
+            } catch (error) {
+                console.log("Erreur lors de la suppression :", error);
+                alert("Erreur lors de la suppression du utilisateur.");
+            }
         }
-      };
+    };
 
 
     return (
         <DefaultLayout>
-            {
-                !editUserId ? (<>
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7.5">
-                        <CardDataStats title="Total d'utilisateur" total={totalUser}>
-                            <FontAwesomeIcon icon={faList} color='#29015D' />
-                        </CardDataStats>
-                    </div>
+            <>
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7.5">
+                    <CardDataStats title="Total d'utilisateur" total={totalUser}>
+                        <FontAwesomeIcon icon={faList} color='#29015D' />
+                    </CardDataStats>
+                </div>
 
-                    <div className="pt-5">
-                        <DataTableComponent
-                            title="Listes des utilisateurs"
-                            columns={columns}
-                            data={users}
-                            pagination
-                            highlightOnHover
-                            addButtonText='Ajouter utilisateur'
-                            onAddButtonLink='/forms/AddUserForm'
-                        />
-                    </div>
-                </>) : (<EditUserForm userId={editUserId} onUpdateSuccess={handleEditSuccess} />)
-            }
+                <div className="pt-5">
+                    {error && (
+                        <div className="mb-4 text-center text-red-500 bg-red-100 p-3 rounded-md">
+                            {error}
+                        </div>
+                    )}
+                    <DataTableComponent
+                        title="Listes des utilisateurs"
+                        columns={columns}
+                        data={users}
+                        pagination
+                        highlightOnHover
+                        addButtonText='Ajouter utilisateur'
+                        onAddButtonLink='/forms/AddUserForm'
+                    />
+                </div>
+            </>
         </DefaultLayout>
     );
 };

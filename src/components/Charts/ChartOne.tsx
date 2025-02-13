@@ -1,7 +1,7 @@
 "use client";
 
 import { ApexOptions } from "apexcharts";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
@@ -12,6 +12,7 @@ const ReactApexChart = dynamic(() => import("react-apexcharts"), {
   ssr: false,
 });
 
+// Configuration du graphique ApexCharts
 const options: ApexOptions = {
   legend: {
     show: false,
@@ -31,47 +32,14 @@ const options: ApexOptions = {
       left: 0,
       opacity: 0.1,
     },
-    toolbar: {
-      show: false,
-    },
+    toolbar: { show: false },
   },
-  responsive: [
-    {
-      breakpoint: 1024,
-      options: {
-        chart: {
-          height: 300,
-        },
-      },
-    },
-    {
-      breakpoint: 1366,
-      options: {
-        chart: {
-          height: 350,
-        },
-      },
-    },
-  ],
   stroke: {
     width: [2, 2],
     curve: "straight",
   },
-  grid: {
-    xaxis: {
-      lines: {
-        show: true,
-      },
-    },
-    yaxis: {
-      lines: {
-        show: true,
-      },
-    },
-  },
-  dataLabels: {
-    enabled: false,
-  },
+  grid: { xaxis: { lines: { show: true } }, yaxis: { lines: { show: true } } },
+  dataLabels: { enabled: false },
   markers: {
     size: 4,
     colors: "#fff",
@@ -81,64 +49,51 @@ const options: ApexOptions = {
   },
   xaxis: {
     type: "category",
-    categories: [
-      "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-    ],
-    axisBorder: {
-      show: false,
-    },
-    axisTicks: {
-      show: false,
-    },
+    categories: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+    axisBorder: { show: false },
+    axisTicks: { show: false },
   },
-  yaxis: {
-    min: 0,
-  },
+  yaxis: { min: 0 },
 };
 
 const ChartOne: React.FC = () => {
   const [series, setSeries] = useState([{ name: "Total Payments", data: Array(12).fill(0) }]);
-  const [filter, setFilter] = useState("all"); // "all" by default
-  const user = useSelector((state: RootState) => state.user); // Accès à l'utilisateur depuis Redux
+  const [filter, setFilter] = useState("all"); // Par défaut "all"
+  const user = useSelector((state: RootState) => state.user);
   const [payments, setPayments] = useState<Payment[]>([]);
 
-  const fetchPayments = async () => {
+  // Fonction pour récupérer les paiements de l'utilisateur
+  const fetchPayments = useCallback(async () => {
     try {
-      const userId = user.role === "teacher" ? (user.id ? String(user.id) : undefined) : undefined;
-      const data = await getPaymentsByTeacher(userId);
+      if (user.role !== "teacher" || !user.id) return;
+      const data = await getPaymentsByTeacher(String(user.id));
       if (Array.isArray(data.payments)) {
         setPayments(data.payments);
-        formatPayments(data.payments);
       } else {
-        console.error("Invalid data format:", data);
+        console.error("Format de données invalide:", data);
       }
     } catch (error) {
-      console.error("Error fetching payments:", error);
+      console.error("Erreur lors de la récupération des paiements:", error);
     }
-  };
+  }, [user.id, user.role]);
 
-  const formatPayments = (payments: Payment[]) => {
+  // Mise à jour des paiements lors du changement de l'utilisateur
+  useEffect(() => {
+    fetchPayments();
+  }, [fetchPayments]);
+
+  // Formatage des paiements pour le graphique
+  useEffect(() => {
     const monthlyTotals = Array(12).fill(0);
-
     payments.forEach((payment) => {
       const paymentDate = new Date(payment.paymentDate);
-      const monthIndex = paymentDate.getUTCMonth(); // 0 for Jan, 1 for Feb, etc.
-
+      const monthIndex = paymentDate.getUTCMonth();
       if (filter === "all" || paymentDate.getUTCFullYear() === parseInt(filter)) {
         monthlyTotals[monthIndex] += payment.totaAmount || 0;
       }
     });
-
     setSeries([{ name: "Total Payments", data: monthlyTotals }]);
-  };
-
-  useEffect(() => {
-    fetchPayments();
-  }, [user?.id, filter]);
-
-  const handleFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setFilter(event.target.value);
-  };
+  }, [payments, filter]);
 
   return (
     <div className="col-span-12 rounded-sm border border-stroke bg-white px-5 pb-5 pt-7.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:col-span-8">
@@ -161,26 +116,18 @@ const ChartOne: React.FC = () => {
           <select
             id="filter"
             value={filter}
-            onChange={handleFilterChange}
+            onChange={(e) => setFilter(e.target.value)}
             className="rounded border border-gray-300 p-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
           >
             <option value="all">All</option>
             <option value="2023">2023</option>
             <option value="2024">2024</option>
-            {/* Add more years as needed */}
           </select>
         </div>
       </div>
-
       <div>
         <div id="chartOne" className="-ml-5">
-          <ReactApexChart
-            options={options}
-            series={series}
-            type="area"
-            height={350}
-            width={"100%"}
-          />
+          <ReactApexChart options={options} series={series} type="area" height={350} width={"100%"} />
         </div>
       </div>
     </div>

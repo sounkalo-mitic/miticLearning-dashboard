@@ -1,12 +1,11 @@
 "use client";
 
 import { ApexOptions } from "apexcharts";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import dynamic from "next/dynamic";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
-import { getPaymentsByTeacher } from "@/services/paymentService";
 
 const ReactApexChart = dynamic(() => import("react-apexcharts"), {
   ssr: false,
@@ -28,49 +27,41 @@ const options: ApexOptions = {
 const ChartFour: React.FC = () => {
   const user = useSelector((state: RootState) => state.user);
   const [completionRate, setCompletionRate] = useState([0, 0]); // Completed, In Progress
-  const [enrolments, setEnrolments] = useState<any[]>([]);
   const [filter, setFilter] = useState<string>("all"); // Filtre initial (tous)
 
-  // Fonction pour calculer le taux de complétion
-  const calculateCompletionRate = (enrolments: any[]) => {
-    const total = enrolments.length;
-    const completed = enrolments.filter((enrolment) => enrolment.status === "completed").length;
-    const inProgress = total - completed;
+  // Fonction pour récupérer les inscriptions et calculer les stats
+  const fetchEnrolments = useCallback(async () => {
+    if (!user?.id) return; // Vérification pour éviter les requêtes inutiles
+    try {
+      const response = await axios.get(
+        `http://localhost:4444/api/enrolment/teacher/${user.id}`
+      );
+      const data = response.data.enrolments;
 
-    // Met à jour le taux de complétion
-    setCompletionRate([completed, inProgress]);
-  };
+      // Appliquer le filtre
+      const filteredData =
+        filter === "completed"
+          ? data.filter((enrolment: any) => enrolment.status === "completed")
+          : filter === "inProgress"
+            ? data.filter((enrolment: any) => enrolment.status === "inProgress")
+            : data;
 
-  // Fonction pour appliquer le filtre
-  const filteredEnrolments = (enrolments: any[]) => {
-    if (filter === "completed") {
-      return enrolments.filter((enrolment) => enrolment.status === "completed");
-    } else if (filter === "inProgress") {
-      return enrolments.filter((enrolment) => enrolment.status === "inProgress");
+      // Calcul du taux de complétion
+      const total = filteredData.length;
+      const completed = filteredData.filter(
+        (enrolment: any) => enrolment.status === "completed"
+      ).length;
+      const inProgress = total - completed;
+
+      setCompletionRate([completed, inProgress]);
+    } catch (error) {
+      console.error("Erreur lors de la récupération des inscriptions :", error);
     }
-    return enrolments; // Par défaut, afficher toutes les inscriptions
-  };
+  }, [user?.id, filter]);
 
   useEffect(() => {
-    const fetchEnrolments = async () => {
-      try {
-        // Exemple d'API pour récupérer les inscriptions
-        const response = await axios.get(`http://localhost:4444/api/enrolment/teacher/${user?.id}`);
-        const data = response.data.enrolments;
-        
-        // Appliquer le filtre aux inscriptions
-        const filteredData = filteredEnrolments(data);
-
-        // Calcul du taux de complétion
-        setEnrolments(filteredData);
-        calculateCompletionRate(filteredData);
-      } catch (error) {
-        console.error("Erreur lors de la récupération des inscriptions :", error);
-      }
-    };
-
     fetchEnrolments();
-  }, [user.id, filter]); // Recharger les données quand le filtre change
+  }, [fetchEnrolments]);
 
   return (
     <div className="col-span-12 rounded-sm border border-stroke bg-white px-5 pb-5 pt-7.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:col-span-8">

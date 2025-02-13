@@ -1,45 +1,33 @@
 "use client";
 
 import { ApexOptions } from "apexcharts";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import dynamic from "next/dynamic";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 
+// Chargement dynamique du composant ReactApexChart sans SSR
 const ReactApexChart = dynamic(() => import("react-apexcharts"), {
   ssr: false,
 });
 
+// Options du graphique
 const options: ApexOptions = {
   chart: {
     type: "line",
     height: 350,
-    zoom: {
-      enabled: true,
-    },
+    zoom: { enabled: true },
   },
-  xaxis: {
-    type: "datetime",
-  },
-  title: {
-    text: "Inscriptions des étudiants au fil du temps",
-    align: "left",
-  },
-  stroke: {
-    width: 2,
-  },
+  xaxis: { type: "datetime" },
+  title: { text: "Inscriptions des étudiants au fil du temps", align: "left" },
+  stroke: { width: 2 },
   markers: {
     size: 5,
     colors: ["#FF5733"],
-    strokeColor: "#fff",
     strokeWidth: 2,
   },
-  tooltip: {
-    x: {
-      format: "dd MMM yyyy",
-    },
-  },
+  tooltip: { x: { format: "dd MMM yyyy" } },
 };
 
 const ChartFive: React.FC = () => {
@@ -47,70 +35,56 @@ const ChartFive: React.FC = () => {
   const [filter, setFilter] = useState<string>("all");
   const user = useSelector((state: RootState) => state.user);
 
-  // Fonction pour transformer la date d'inscription en format requis pour le graphique
+  // Fonction pour filtrer les inscriptions selon la période sélectionnée
+  const filterData = useCallback(
+    (enrolments: any[]) => {
+      const currentDate = new Date();
+      return enrolments.filter((enrolment) => {
+        const enrolmentDate = new Date(enrolment.createdAt);
+        switch (filter) {
+          case "lastWeek":
+            return enrolmentDate >= new Date(currentDate.setDate(currentDate.getDate() - 7));
+          case "lastMonth":
+            return enrolmentDate >= new Date(currentDate.setMonth(currentDate.getMonth() - 1));
+          default:
+            return true;
+        }
+      });
+    },
+    [filter]
+  );
+
+  // Fonction pour structurer les données pour le graphique
   const prepareDataForChart = (enrolments: any[]) => {
     const data = enrolments.map((enrolment) => ({
       x: new Date(enrolment.createdAt).getTime(),
-      y: 1, // Une inscription par ligne
+      y: 1,
     }));
 
-    // Grouper les données par date
-    const groupedData: any[] = [];
-    data.forEach((entry) => {
-      const existing = groupedData.find(
-        (group) => new Date(group.x).toDateString() === new Date(entry.x).toDateString()
-      );
-      if (existing) {
-        existing.y += 1;
-      } else {
-        groupedData.push(entry);
-      }
-    });
+    const groupedData = data.reduce((acc, entry) => {
+      const dateKey = new Date(entry.x).toDateString();
+      const existing = acc.find((group) => new Date(group.x).toDateString() === dateKey);
+      if (existing) existing.y += 1;
+      else acc.push(entry);
+      return acc;
+    }, [] as any[]);
 
-    // Mise à jour de l'état pour le graphique
     setChartData(groupedData);
   };
 
-  // Fonction de filtrage des données en fonction de la sélection
-  const filterData = (enrolments: any[]) => {
-    const filteredData = enrolments.filter((enrolment) => {
-      const enrolmentDate = new Date(enrolment.createdAt);
-      const currentDate = new Date();
-
-      if (filter === "lastWeek") {
-        const lastWeek = new Date();
-        lastWeek.setDate(currentDate.getDate() - 7);
-        return enrolmentDate >= lastWeek;
-      } else if (filter === "lastMonth") {
-        const lastMonth = new Date();
-        lastMonth.setMonth(currentDate.getMonth() - 1);
-        return enrolmentDate >= lastMonth;
-      }
-      // Si aucun filtre n'est sélectionné, afficher toutes les données
-      return true;
-    });
-
-    return filteredData;
-  };
-
+  // Récupération des inscriptions et mise à jour du graphique
   useEffect(() => {
     const fetchEnrolments = async () => {
       try {
-        const response = await axios.get(`http://localhost:4444/api/enrollement`);
-        const enrolments = response.data;
-
-        // Appliquer le filtre
-        const filteredEnrolments = filterData(enrolments);
-
-        // Préparer les données pour le graphique
+        const response = await axios.get("http://localhost:4444/api/enrollement");
+        const filteredEnrolments = filterData(response.data);
         prepareDataForChart(filteredEnrolments);
       } catch (error) {
         console.error("Erreur lors de la récupération des inscriptions :", error);
       }
     };
-
     fetchEnrolments();
-  }, [user.id, filter]); // Recharger les données à chaque changement de filtre
+  }, [user.id, filter, filterData]);
 
   return (
     <div className="col-span-12 rounded-sm border border-stroke bg-white px-5 pb-5 pt-7.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:col-span-8">

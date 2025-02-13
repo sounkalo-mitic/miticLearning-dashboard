@@ -1,20 +1,22 @@
+"use client"
 import { getCategoryById, updateCategory } from "@/services/categoryService";
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 
-interface EditCategoryFormProps {
-  categoryId: string;
-  onSuccess: () => void; // Callback pour rafraîchir la liste des catégories après mise à jour
-}
-
-const EditCategoryForm: React.FC<EditCategoryFormProps> = ({ categoryId, onSuccess }) => {
+const EditCategoryForm: React.FC = () => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [error, setError] = useState("");
+  const searchParams = useSearchParams();
+  const categoryId = searchParams.get("page"); // Récupération du paramètre "page" de l'URL
+  const router = useRouter();
+
 
   useEffect(() => {
     const fetchCategory = async () => {
       try {
-        const { data } = await getCategoryById(categoryId);
+        const { data } = await getCategoryById(categoryId as string);
         setName(data.name);
         setDescription(data.description || "");
       } catch (err: any) {
@@ -27,9 +29,9 @@ const EditCategoryForm: React.FC<EditCategoryFormProps> = ({ categoryId, onSucce
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await updateCategory(categoryId, { name, description });
+      await updateCategory(String(categoryId), { name, description });
       alert("Catégorie mise à jour avec succès !");
-      onSuccess();
+      router.push(`/category`);
     } catch (err: any) {
       setError(err.response?.data?.message || "Une erreur s'est produite");
     }
