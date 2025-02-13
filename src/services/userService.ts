@@ -32,7 +32,7 @@ export const createUser = async (user: User) => {
     return response.data;
 };
 
-export const updateUser = async (id: string, user: Partial<User>) => {
+export const updateUser = async (id: string, user: any) => {
     const response = await axios.put(`${API_URL}/${id}`, user);
     return response.data;
 };

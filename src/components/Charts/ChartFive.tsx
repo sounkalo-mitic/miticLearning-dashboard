@@ -25,7 +25,6 @@ const options: ApexOptions = {
   markers: {
     size: 5,
     colors: ["#FF5733"],
-    strokeColor: "#fff",
     strokeWidth: 2,
   },
   tooltip: { x: { format: "dd MMM yyyy" } },
