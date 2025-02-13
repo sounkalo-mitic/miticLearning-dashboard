@@ -15,16 +15,17 @@ import DefaultLayout from "@/components/Layouts/DefaultLayout";
 import { deleteCourse, getCourses } from "@/services/courseService";
 import CardDataStats from "@/components/CardDataStats";
 import { Course } from "@/types/course";
-import PreviewCourse from "../cours_validation/page";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { TableColumn } from "react-data-table-component";
+import { useRouter } from "next/router"; // Importation du hook useRouter
 
 const Courses: React.FC = () => {
     const [courses, setCourses] = useState<Course[]>([]);
     const [totalCourse, setTotalCourse] = useState<string>('');
     const [selectedCourse, setSelectedCourse] = useState<string>('');
     const user = useSelector((state: RootState) => state.user);
+    const router = useRouter();
 
     /**
      * Récupère la liste des cours depuis l'API en fonction du rôle de l'utilisateur.
@@ -65,8 +66,11 @@ const Courses: React.FC = () => {
     /**
      * Gère l'affichage du détail d'un cours.
      */
+
+
     const handleView = (id: string) => {
-        setSelectedCourse(id);
+        // Redirige vers la page PreviewCourse avec l'ID dans l'URL
+        router.push(`/cours_validation?page=${id}`);
     };
 
     /**
@@ -179,31 +183,27 @@ const Courses: React.FC = () => {
 
     return (
         <DefaultLayout>
-            {selectedCourse !== null ? (
-                <>
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7.5">
-                        <CardDataStats title="Total de cours" total={totalCourse}>
-                            <FontAwesomeIcon icon={faList} color="#29015D" />
-                        </CardDataStats>
-                        <CardDataStats title="Montant Total" total={String(calculateTotalPrice(courses))}>
-                            <FontAwesomeIcon icon={faMoneyBill} color="#29015D" />
-                        </CardDataStats>
-                    </div>
-                    <div className="pt-5">
-                        <DataTableComponent
-                            title="Liste des Cours"
-                            columns={columns}
-                            data={courses}
-                            pagination
-                            highlightOnHover
-                            addButtonText="Ajouter un cours"
-                            onAddButtonLink="/forms/AddCourseForm"
-                        />
-                    </div>
-                </>
-            ) : (
-                <PreviewCourse courseId={String(selectedCourse)} />
-            )}
+            <>
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7.5">
+                    <CardDataStats title="Total de cours" total={totalCourse}>
+                        <FontAwesomeIcon icon={faList} color="#29015D" />
+                    </CardDataStats>
+                    <CardDataStats title="Montant Total" total={String(calculateTotalPrice(courses))}>
+                        <FontAwesomeIcon icon={faMoneyBill} color="#29015D" />
+                    </CardDataStats>
+                </div>
+                <div className="pt-5">
+                    <DataTableComponent
+                        title="Liste des Cours"
+                        columns={columns}
+                        data={courses}
+                        pagination
+                        highlightOnHover
+                        addButtonText="Ajouter un cours"
+                        onAddButtonLink="/forms/AddCourseForm"
+                    />
+                </div>
+            </>
 
         </DefaultLayout>
     );

@@ -7,14 +7,14 @@ import DataTableComponent from "@/components/Tables/DataTable";
 import DefaultLayout from "@/components/Layouts/DefaultLayout";
 import { deleteJob, getAllJobs } from "@/services/jobService";
 import { Job } from "@/types/job";
-import EditJobForm from "../forms/EditJobForm/page";
+import { useRouter } from "next/router";
+
 
 const Jobs: React.FC = () => {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [totalJobs, setTotalJobs] = useState<string>('');
-  const [editJobId, setEditJobId] = useState<string | null>(null);
-
+  const router = useRouter();
 
   const fetchJobs = async () => {
     try {
@@ -31,13 +31,9 @@ const Jobs: React.FC = () => {
   }, []);
 
   const handleEditClick = (id: string) => {
-    setEditJobId(id);
+    router.push(`/forms/EditJobForm?page=${id}`);
   };
 
-  const handleEditSuccess = () => {
-    setEditJobId(null);
-    fetchJobs()
-  };
 
   const handleDelete = async (id: string) => {
     if (confirm("Êtes-vous sûr de vouloir supprimer ce job ?")) {
@@ -91,32 +87,30 @@ const Jobs: React.FC = () => {
 
   return (
     <DefaultLayout>
-      {
-        !editJobId ? (<>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7.5">
-            <CardDataStats title="Total des Emplois" total={totalJobs}>
-              <FontAwesomeIcon icon={faBriefcase} color="#29015D" />
-            </CardDataStats>
-          </div>
+      <>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7.5">
+          <CardDataStats title="Total des Emplois" total={totalJobs}>
+            <FontAwesomeIcon icon={faBriefcase} color="#29015D" />
+          </CardDataStats>
+        </div>
 
-          <div className="pt-5">
-            {error && (
-              <div className="mb-4 text-center text-red-500 bg-red-100 p-3 rounded-md">
-                {error}
-              </div>
-            )}
-            <DataTableComponent
-              title="Liste des Emplois"
-              columns={columns}
-              data={jobs}
-              pagination
-              highlightOnHover
-              addButtonText="Ajouter un Emploi"
-              onAddButtonLink="/forms/AddJobForm"
-            />
-          </div>
-        </>) : (<EditJobForm JobId={editJobId} onSuccess={handleEditSuccess} />)
-      }
+        <div className="pt-5">
+          {error && (
+            <div className="mb-4 text-center text-red-500 bg-red-100 p-3 rounded-md">
+              {error}
+            </div>
+          )}
+          <DataTableComponent
+            title="Liste des Emplois"
+            columns={columns}
+            data={jobs}
+            pagination
+            highlightOnHover
+            addButtonText="Ajouter un Emploi"
+            onAddButtonLink="/forms/AddJobForm"
+          />
+        </div>
+      </>
     </DefaultLayout>
   );
 };

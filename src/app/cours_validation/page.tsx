@@ -6,19 +6,19 @@ import { motion } from "framer-motion";
 import { ChevronRight, ChevronLeft, Clock, Tag, BookOpen, User } from "lucide-react";
 import { CourseResponse, Lesson, Section } from "@/types/course";
 import { getCourseDetails } from "@/services/courseService";
+import { useSearchParams } from "next/navigation";
 
-// Définition des props
-interface PreviewCourseProps {
-    courseId: string; // Assurez-vous que cette propriété est correctement typée.
-}
-
-const PreviewCourse: React.FC<PreviewCourseProps> = ({ courseId }) => {
+const PreviewCourse: React.FC = () => {
     const [courseInfo, setCourseInfo] = useState<CourseResponse | null>(null);
     const [selectedLessonIndex, setSelectedLessonIndex] = useState<number>(0);
     const [selectedSectionIndex, setSelectedSectionIndex] = useState<number>(0);
     const [loading, setLoading] = useState(true);
+    const searchParams = useSearchParams();
+    const courseId = searchParams.get("page"); // Récupération du paramètre "page" de l'URL
 
     useEffect(() => {
+        if (!courseId) return; // On ne lance pas la récupération si pas d'ID de cours
+
         const fetchData = async () => {
             try {
                 const data = await getCourseDetails(courseId);
@@ -35,7 +35,10 @@ const PreviewCourse: React.FC<PreviewCourseProps> = ({ courseId }) => {
         };
 
         fetchData();
-    }, [courseId]);
+    }, [courseId]); // L'effet se déclenche uniquement lorsque `courseId` change
+
+    // Vérifiez si courseId est manquant avant de rendre le contenu
+    if (!courseId) return <p>Le cours a pas été trouvé.</p>;
 
     if (loading) return <p>Chargement...</p>;
 
@@ -89,11 +92,11 @@ const PreviewCourse: React.FC<PreviewCourseProps> = ({ courseId }) => {
                         </div>
                         <div className="flex items-center gap-2">
                             <BookOpen size={20} className="text-purple-600" />
-                            <span>Nombre de leçons : {lessons.length}</span>
+                            <span>Nombre de lecons : {lessons.length}</span>
                         </div>
                         <div className="flex items-center gap-2">
                             <Clock size={20} className="text-blue-600" />
-                            <span>Durée : {courseInfo.course.duration}</span>
+                            <span>Duree : {courseInfo.course.duration}</span>
                         </div>
                         <div className="flex items-center gap-2">
                             <Tag size={20} className="text-green-600" />
@@ -146,7 +149,7 @@ const PreviewCourse: React.FC<PreviewCourseProps> = ({ courseId }) => {
                             <p>{currentSection.description.replace(/'/g, "&rsquo;")}</p>
                         </motion.div>
                     ) : (
-                        <p>Sélectionnez une leçon et une section pour les afficher</p>
+                        <p>Selectionnez une lecon et une section pour les afficher</p>
                     )}
 
                     {/* Contrôles de navigation */}

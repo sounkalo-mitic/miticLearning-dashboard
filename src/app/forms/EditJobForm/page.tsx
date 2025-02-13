@@ -1,21 +1,21 @@
 "use client"
 import { getJobById, updateJob } from "@/services/jobService";
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/router";
+import { useSearchParams } from "next/navigation";
 
-interface EditJobFormProps {
-  JobId: string;
-  onSuccess: () => void; // Callback pour rafraîchir la liste des catégories après mise à jour
-}
-
-const EditJobForm: React.FC<EditJobFormProps> = ({ JobId, onSuccess }) => {
+const EditJobForm: React.FC = () => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [error, setError] = useState("");
+  const searchParams = useSearchParams();
+  const JobId = searchParams.get("page"); // Récupération du paramètre "page" de l'URL
+  const router = useRouter();
 
   useEffect(() => {
     const fetchJob = async () => {
       try {
-        const { data } = await getJobById(JobId);
+        const { data } = await getJobById(JobId as string);
         setName(data.name);
         setDescription(data.description || "");
       } catch (err: any) {
@@ -28,9 +28,9 @@ const EditJobForm: React.FC<EditJobFormProps> = ({ JobId, onSuccess }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await updateJob(JobId, { name, description });
+      await updateJob(String(JobId), { name, description });
       alert("Job mise à jour avec succès !");
-      onSuccess();
+      router.push(`/job`);
     } catch (err: any) {
       setError(err.response?.data?.message || "Une erreur s'est produite");
     }
