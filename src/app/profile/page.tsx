@@ -63,13 +63,14 @@ const Profile = () => {
   };
 
   const handleEdit = () => {
-    if (window.confirm("Voulez-vous vraiment modifier votre profil ?")) {
+    if (typeof window !== "undefined" && window.confirm("Voulez-vous vraiment modifier votre profil ?")) {
       setEditMode(true);
     }
   };
+  
 
   const handleCancel = () => {
-    if (window.confirm("Voulez-vous annuler vos modifications ?")) {
+    if (typeof window !== "undefined" && window.confirm("Voulez-vous annuler vos modifications ?")) {
       setFormData(originalData);
       setEditMode(false);
     }
